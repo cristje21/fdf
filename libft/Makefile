@@ -6,7 +6,7 @@
 #    By: cristje <cristje@student.42.fr>              +#+                      #
 #                                                    +#+                       #
 #    Created: 2022/10/12 13:59:30 by cvan-sch      #+#    #+#                  #
-#    Updated: 2023/02/02 16:04:55 by cvan-sch      ########   odam.nl          #
+#    Updated: 2023/04/01 18:54:40 by cvan-sch      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,7 +28,8 @@ SRC_F = ft_isalpha.c ft_isdigit.c ft_isalnum.c\
 		ft_lstdelone.c ft_lstclear.c ft_lstiter.c ft_lstmap.c\
 		get_next_line.c get_next_line_utils.c\
 		ft_printf.c ft_put_two.c ft_put.c\
-		ft_print_array.c ft_putnstr_fd.c
+		ft_print_array.c ft_putnstr_fd.c\
+		ft_error.c
 
 NAME = libft.a
 OBJ_F = $(SRC_F:%.c=%.o)

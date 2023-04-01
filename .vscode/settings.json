@@ -1,5 +1,19 @@
 {
 	"files.associations": {
-		"mlx42.h": "c"
+		"mlx42.h": "c",
+		"stdlib.h": "c",
+		"stdio.h": "c",
+		"libft.h": "c",
+		"__bit_reference": "c",
+		"__hash_table": "c",
+		"__split_buffer": "c",
+		"array": "c",
+		"initializer_list": "c",
+		"ios": "c",
+		"iterator": "c",
+		"string": "c",
+		"string_view": "c",
+		"unordered_map": "c",
+		"vector": "c"
 	}
 }

@@ -1,5 +1,6 @@
 NAME		=		fdf
-SRC			=		fdf_main.c
+SRC			=		fdf_main.c \
+					put_line.c
 LIBFT		=		libft/libft.a
 OBJ_F		=		$(SRC:%.c=obj/%.o)
 FLAGS		=		-Wall -Werror -Wextra
