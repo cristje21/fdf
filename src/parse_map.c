@@ -6,71 +6,118 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/01 18:41:03 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/01 19:44:02 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/04/03 21:49:46 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/libft.h"
+#include <fdf.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/errno.h>
 
-int	fdf_atoi(const char *str)
+void	new_line(s_lines **head, int *line)
 {
-	int		i;
-	long	res;
-	char	*s;
-	int		m;
+	s_lines	*new;
+	s_lines	*tmp;
 
-	s = (char *)str;
-	res = 0;
-	i = whitespace(s);
-	m = 1;
-	if (s && s[i] == '-')
+	new = malloc(sizeof(s_lines));
+	if (new == NULL)
+		ft_error("Error: malloc failure", errno);
+	new->line = line;
+	new->next = NULL;
+	if (*head == NULL)
+		*head = new;
+	else
 	{
-		m = -1;
-		i++;
+		tmp = *head;
+		while (tmp->next)
+			tmp = tmp->next;
+		tmp->next = new;
 	}
-	while (s && s[i] == '0' && s[i + 1] == '0')
-		i++;
-	if (!s || !s[i] || ft_strlen(s + i) > 10)
-		return (ft_error("Error: input is not an integer\n"), EXIT_FAILURE);
-	while (s[i] <= '9' && s[i] >= '0')
-		res = res * 10 + s[i++] - '0';
-	res *= m;
-	if ((res <= 2147483647 && res >= -2147483648) && !s[i])
-		return (res);
-	return (ft_error("Error: input is not an integer\n"), EXIT_FAILURE);
 }
 
-typedef struct s_matrix
+int	**make_array(s_lines **head)
 {
-	int				*line;
-	struct s_matrix	*next;
-}					t_lines;
+	s_lines	*tmp;
+	int		count;
+	int		**result;
 
+	tmp = *head;
+	count = 0;
+	while (tmp)
+	{
+		tmp = tmp->next;
+		count++;
+	}
+	result = malloc((count + 1) * sizeof(int *));
+	if (result == NULL)
+		ft_error("Error: malloc failure", errno);
+	result[count] = NULL;
+	count = 0;
+	while (*head)
+	{
+		tmp = *head;
+		result[count++] = (*head)->line;
+		*head = tmp->next;
+		free(tmp);
+	}
+	return (result);
+}
 
+int	fill_array(int i, char *s, int *result, int *count)
+{
+	while (s[i] == ' ')
+		i++;
+	if (s[i] && s[i] != '\n')
+		result[*count] = fdf_atoi(&s[i]);
+	while (s[i] && s[i] != ' ')
+		i++;
+	*count = *count + 1;
+	return (i);
+}
 
-int	parse_map(char *map, int **matrix)
+int	**make_list(char *s, int width, int fd)
+{
+	int		i;
+	int		count;
+	int		*result;
+	s_lines	*head;
+
+	head = NULL;
+	while (s)
+	{
+		i = 0;
+		count = 0;
+		result = malloc(width * sizeof(int));
+		if (result == NULL)
+			ft_error("Error: malloc failure", errno);
+		while (s[i] && count < width)
+			i = fill_array(i, s, result, &count);
+		while (s[i] == ' ')
+			i++;
+		if (count != width || (s[i] && s[i] != '\n'))
+			ft_error("Error: wrong map format\n", -2);
+		free(s);
+		new_line(&head, result);
+		s = get_next_line(fd);
+	}
+	return (make_array(&head));
+}
+
+int	parse_map(int ***result, char *map)
 {
 	int		fd;
-	char	**s;
-	char	*tmp;
-	t_lines	*start;
+	int		width;
+	char	*s;
 
 	fd = open(map, O_RDONLY);
 	if (fd == -1)
-		ft_error("Error: failed to open map");
-	tmp = get_next_line(fd);
-	if (tmp == NULL)
-		ft_error("Error: malloc failed");
-	while (tmp)
-	{
-		s = ft_split(tmp, ' ');
-		if (s == NULL)
-			ft_error("Error: malloc failed");
-		else if (*s == NULL)
-			ft_error("Error: no input\n");
-		while ()
-	}
-	return (0);
+		ft_error("Error: opening map", errno);
+	s = get_next_line(fd);
+	if (s == NULL)
+		ft_error("Error: empty map\n", -1);
+	width = get_width(s);
+	*result = make_list(s, width, fd);
+	return (width);
 }

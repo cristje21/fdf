@@ -1,12 +1,16 @@
 NAME		=		fdf
 SRC			=		fdf_main.c \
-					put_line.c
+					put_line.c \
+					parse_map.c \
+					fdf_atoi.c
+
 LIBFT		=		libft/libft.a
 OBJ_F		=		$(SRC:%.c=obj/%.o)
 FLAGS		=		-Wall -Werror -Wextra
 MLX_FLAGS	=		-framework Cocoa -framework OpenGL -framework IOKit -lglfw3
 MLX_LIB		=		MLX42/build/libmlx42.a
 HEADER		=		-I MLX42/include/MLX42 -I include
+FSAN		=		-g -fsanitize=address
 
 all : $(NAME)
 

@@ -1,31 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   ft_error.c                                         :+:    :+:            */
+/*   ft_free_dp.c                                       :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2023/04/01 18:49:13 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/03 15:13:02 by cvan-sch      ########   odam.nl         */
+/*   Created: 2023/04/03 13:29:01 by cvan-sch      #+#    #+#                 */
+/*   Updated: 2023/04/03 13:31:29 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include <sys/errno.h>
-#include <unistd.h>
-#include <stdio.h>
-#include "libft.h"
 
-void	ft_error(char *msg, int err)
+void	ft_free_dp(char **s)
 {
-	if (err > 0)
+	int	i;
+	
+	i = 0;
+	if (s)
 	{
-		perror(msg);
-		exit(err);
+		while (s[i])
+			free(s[i++]);
+		free(s);
 	}
-	else if (msg)
-		write(2, msg, ft_strlen(msg));
-	else
-		write(2, "Error\n", 6);
-	exit(EXIT_FAILURE);
 }
