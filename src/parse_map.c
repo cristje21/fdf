@@ -6,7 +6,7 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/01 18:41:03 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/03 21:49:46 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/04/04 16:42:58 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,12 @@
 #include <stdlib.h>
 #include <sys/errno.h>
 
-void	new_line(s_lines **head, int *line)
+void	new_line(t_lines **head, int *line)
 {
-	s_lines	*new;
-	s_lines	*tmp;
+	t_lines	*new;
+	t_lines	*tmp;
 
-	new = malloc(sizeof(s_lines));
+	new = malloc(sizeof(t_lines));
 	if (new == NULL)
 		ft_error("Error: malloc failure", errno);
 	new->line = line;
@@ -37,9 +37,9 @@ void	new_line(s_lines **head, int *line)
 	}
 }
 
-int	**make_array(s_lines **head)
+void	make_array(t_lines **head, t_info *info)
 {
-	s_lines	*tmp;
+	t_lines	*tmp;
 	int		count;
 	int		**result;
 
@@ -62,7 +62,8 @@ int	**make_array(s_lines **head)
 		*head = tmp->next;
 		free(tmp);
 	}
-	return (result);
+	info->height = count;
+	info->matrix = result;
 }
 
 int	fill_array(int i, char *s, int *result, int *count)
@@ -77,47 +78,50 @@ int	fill_array(int i, char *s, int *result, int *count)
 	return (i);
 }
 
-int	**make_list(char *s, int width, int fd)
+void	make_list(char *s, t_info *info, int fd)
 {
 	int		i;
 	int		count;
 	int		*result;
-	s_lines	*head;
+	t_lines	*head;
 
 	head = NULL;
 	while (s)
 	{
 		i = 0;
 		count = 0;
-		result = malloc(width * sizeof(int));
+		result = malloc(info->width * sizeof(int));
 		if (result == NULL)
 			ft_error("Error: malloc failure", errno);
-		while (s[i] && count < width)
+		while (s[i] && count < info->width)
 			i = fill_array(i, s, result, &count);
 		while (s[i] == ' ')
 			i++;
-		if (count != width || (s[i] && s[i] != '\n'))
+		if (count != info->width || (s[i] && s[i] != '\n'))
 			ft_error("Error: wrong map format\n", -2);
 		free(s);
 		new_line(&head, result);
 		s = get_next_line(fd);
 	}
-	return (make_array(&head));
+	make_array(&head, info);
 }
 
-int	parse_map(int ***result, char *map)
+t_info	*parse_map(char *map)
 {
 	int		fd;
-	int		width;
 	char	*s;
+	t_info	*info;
 
+	info = malloc(sizeof(t_info));
+	if (info == NULL)
+		ft_error("Error: malloc failure", errno);
 	fd = open(map, O_RDONLY);
 	if (fd == -1)
 		ft_error("Error: opening map", errno);
 	s = get_next_line(fd);
 	if (s == NULL)
 		ft_error("Error: empty map\n", -1);
-	width = get_width(s);
-	*result = make_list(s, width, fd);
-	return (width);
+	info->width = get_width(s);
+	make_list(s, info, fd);
+	return (info);
 }

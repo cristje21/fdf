@@ -28,7 +28,6 @@ obj/%.o : src/%.c
 	$(CC) $(FLAGS) $(HEADER) -o $@ -c $^
 
 clean :
-	@make -C libft clean
 	@rm -rf obj
 
 fclean : clean
