@@ -6,7 +6,7 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/01 18:41:03 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/04 16:42:58 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/05/01 22:07:39 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,94 +16,92 @@
 #include <stdlib.h>
 #include <sys/errno.h>
 
-void	new_line(t_lines **head, int *line)
-{
-	t_lines	*new;
-	t_lines	*tmp;
+// void	print_everything(t_matrix *head)
+// {
+// 	t_matrix	*tmp;
 
-	new = malloc(sizeof(t_lines));
-	if (new == NULL)
-		ft_error("Error: malloc failure", errno);
-	new->line = line;
-	new->next = NULL;
-	if (*head == NULL)
-		*head = new;
-	else
+// 	tmp = head;
+// 	while (head)
+// 	{
+// 		tmp = head;
+// 		while (tmp)
+// 		{
+// 			ft_printf("x:%d, y:%d, z:%d, color:%d\n", tmp->x, tmp->y, tmp->z, tmp->color);
+// 			tmp = tmp->next;
+// 		}
+// 		ft_printf("\n");
+// 		head = head->down;
+// 	}
+// }
+
+void	get_line(char *s, int y, t_matrix **head)
+{
+	int			i;
+	int			x;
+	int			z;
+	t_matrix	*to_add;
+
+	i = 0;
+	x = 0;
+	while (s[i])
 	{
-		tmp = *head;
-		while (tmp->next)
-			tmp = tmp->next;
-		tmp->next = new;
+		while (s[i] == ' ' || s[i] == '\n')
+			i++;
+		if (s[i])
+			z = fdf_atoi(&s[i]);
+		while (s[i] && s[i] != ' ' && s[i] != ',')
+			i++;
+		if (s[i] == ',')
+			to_add = new_node(x, y, z, (ft_xtoi(&s[i + 1]) << 8) + 255);
+		else
+			to_add = new_node(x, y, z, 0xFFFFFFFF);
+		while (s[i] && s[i] != ' ')
+			i++;
+		add_back(head, to_add);
+		x++;
 	}
 }
 
-void	make_array(t_lines **head, t_info *info)
+void	stream_line(t_matrix *bottom, t_matrix *top)
 {
-	t_lines	*tmp;
-	int		count;
-	int		**result;
-
-	tmp = *head;
-	count = 0;
-	while (tmp)
+	while (top)
 	{
-		tmp = tmp->next;
-		count++;
+		top->down = bottom;
+		if (!bottom)
+			ft_error("Error: map format\n", -1);
+		bottom = bottom->next;
+		top = top->next;
 	}
-	result = malloc((count + 1) * sizeof(int *));
-	if (result == NULL)
-		ft_error("Error: malloc failure", errno);
-	result[count] = NULL;
-	count = 0;
-	while (*head)
+	if (bottom)
 	{
-		tmp = *head;
-		result[count++] = (*head)->line;
-		*head = tmp->next;
-		free(tmp);
+		ft_printf("bottom->x: %d\nbottom->y: %d\nbottom->z: %d\n", bottom->x, bottom->y, bottom->z);
+		ft_error("Error: map format\n", -1);
 	}
-	info->height = count;
-	info->matrix = result;
+	
 }
 
-int	fill_array(int i, char *s, int *result, int *count)
+void	make_linked_list(int fd, char *s, t_info *info)
 {
-	while (s[i] == ' ')
-		i++;
-	if (s[i] && s[i] != '\n')
-		result[*count] = fdf_atoi(&s[i]);
-	while (s[i] && s[i] != ' ')
-		i++;
-	*count = *count + 1;
-	return (i);
-}
+	t_matrix	*y_head;
+	t_matrix	*tmp;
+	int			y;
 
-void	make_list(char *s, t_info *info, int fd)
-{
-	int		i;
-	int		count;
-	int		*result;
-	t_lines	*head;
-
-	head = NULL;
+	y = 0;
 	while (s)
 	{
-		i = 0;
-		count = 0;
-		result = malloc(info->width * sizeof(int));
-		if (result == NULL)
-			ft_error("Error: malloc failure", errno);
-		while (s[i] && count < info->width)
-			i = fill_array(i, s, result, &count);
-		while (s[i] == ' ')
-			i++;
-		if (count != info->width || (s[i] && s[i] != '\n'))
-			ft_error("Error: wrong map format\n", -2);
+		y_head = NULL;
+		get_line(s, y, &y_head);
+		if (!y)
+			info->matrix = y_head;
+		else
+			stream_line(y_head, tmp);
+		tmp = y_head;
 		free(s);
-		new_line(&head, result);
 		s = get_next_line(fd);
+		y++;
 	}
-	make_array(&head, info);
+	info->height = y;
+	info->width = get_width(info->matrix);
 }
 
 t_info	*parse_map(char *map)
@@ -121,7 +119,7 @@ t_info	*parse_map(char *map)
 	s = get_next_line(fd);
 	if (s == NULL)
 		ft_error("Error: empty map\n", -1);
-	info->width = get_width(s);
-	make_list(s, info, fd);
+	make_linked_list(fd, s, info);
+	info->z_scaler = 0;
 	return (info);
 }

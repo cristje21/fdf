@@ -6,112 +6,133 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/03/22 16:46:48 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/04 22:07:49 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/05/01 21:43:19 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fdf.h>
 #include <stdio.h>
-
-void	print_matrix(int **matrix, int width)
-{
-	int i, j;
-
-	i = 0;
-	while (matrix[i])
-	{
-		j = 0;
-		while (j < width)
-		{
-			ft_printf("%d ", matrix[i][j]);
-			j++;
-		}
-		ft_printf("\n");
-		i++;
-	}
-}
-
-void	get_starting_position(t_info *info)
-{
-	info->central[x] = W >> 1;
-	info->central[y] = H >> 1;
-	if (info->width & 1)
-		info->start[x] = info->central[x] - ((info->width >> 1) * info->unit_length);
-	else
-		info->start[x] = info->central[x] - (((info->width >> 1) - 1) * info->unit_length);
-	if (info->height & 1)
-		info->start[y] = info->central[y] - ((info->height >> 1) * info->unit_length);
-	else
-		info->start[y] = info->central[y] - (((info->height >> 1) - 1) * info->unit_length);
-	if (!(info->width & 0))
-		info->start[x] -= info->unit_length >> 1;
-	if (!(info->height & 0))
-		info->start[y] -= info->unit_length >> 1;
-	ft_printf("central (%d)(%d)\n start (%d)(%d)\nunit size: %d\n", info->central[x], info->central[y], info->start[x], info->start[y], info->unit_length);
-	//ft_printf("info->start[x]: %d\ninfo->start[y]: %d\nend x: %d, end y: %d\n", info->start[0], info->start[1], info->start[0] + (info->width * info->unit_length), info->start[1] + (info->height * info->unit_length));
-	//exit(0);
-}
+#include <math.h>
 
 void	get_unit_length(t_info *info)
 {
-	if (info->width > info->height)
+	if (W <= H)
 	{
-		info->unit_length = (W - PAD) / info->width;
-		if (info->height * info->unit_length > (H - PAD))
-			info->unit_length = (H - PAD) / info->height;
+		if (info->width > info->height)
+			info->unit_length = ((W >> 1) - (PAD)) / info->width;
+		else
+			info->unit_length = ((W >> 1) - (PAD)) / info->height;
 	}
 	else
 	{
-		info->unit_length = (H - PAD) / info->height;
-		if (info->width * info->unit_length > (W - PAD))
-			info->unit_length = (W - PAD) / info->width;
+		if (info->width > info->height)
+			info->unit_length = ((H >> 1) - (PAD)) / info->width;
+		else
+			info->unit_length = ((H >> 1) - (PAD)) / info->height;
 	}
-	get_starting_position(info);
+	if (info->unit_length < 3)
+		info->unit_length = 3;
+	info->origin[0] = W >> 1;
+	info->origin[1] = H >> 1;
 }
 
-void	put_dot(mlx_image_t *img, t_info *info)
+void	print_everything(t_matrix *head)
 {
-	mlx_put_pixel(img, info->start[x], info->start[y], 0xFFFFFF);
-	mlx_put_pixel(img, info->start[x] + 1, info->start[y], 0xFFFFFF);
-	mlx_put_pixel(img, info->start[x] - 1, info->start[y], 0xFFFFFF);
-	mlx_put_pixel(img, info->start[x], info->start[y] + 1, 0xFFFFFF);
-	mlx_put_pixel(img, info->start[x], info->start[y] - 1, 0xFFFFFF);
+	t_matrix	*tmp;
+
+	tmp = head;
+	while (head)
+	{
+		tmp = head;
+		while (tmp)
+		{
+			ft_printf("x:%d, y:%d, z:%d, color:%d\n", tmp->x, tmp->y, tmp->z, tmp->color);
+			tmp = tmp->next;
+		}
+		ft_printf("\n");
+		head = head->down;
+	}
 }
 
-int	main(void)
+void reassign_coords(t_info *info, t_matrix *matrix, int flag)
+{
+	matrix->x -= (info->width >> 1);
+	matrix->y -= (info->height >> 1);
+	if (matrix->next && flag)
+		reassign_coords(info, matrix->next, 1);
+	if (matrix->down)
+		reassign_coords(info, matrix->down, 0);
+}
+
+static void iso_transformation(int *result, t_matrix *matrix, t_info *info)
+{
+	result[0] = ((matrix->x * info->unit_length) - (matrix->y * info->unit_length)) * cos(0.523599) + info->origin[0];
+	result[1] = ((matrix->x * info->unit_length) + (matrix->y * info->unit_length)) * sin(0.523599) + info->origin[1] - matrix->z;
+}
+
+void	draw_all_lines(t_info *info, mlx_image_t *img, t_matrix *matrix, int flag)
+{
+	int	start[2];
+	int	end[2];
+
+	if (matrix == NULL)
+		return ;
+	if (matrix->next)
+	{
+		iso_transformation(start, matrix, info);
+		iso_transformation(end, matrix->next, info);
+		put_line(start, end, matrix->color, img);
+	}
+	if (matrix->down)
+	{
+		iso_transformation(start, matrix, info);
+		iso_transformation(end, matrix->down, info);
+		put_line(start, end, matrix->color, img);
+	}
+	if (flag)
+		draw_all_lines(info, img, matrix->next, 1);
+	draw_all_lines(info, img, matrix->down, 0);
+}
+
+void	draw_full_screen(mlx_image_t *img, int color)
+{
+	int	x;
+	int	y;
+
+	y = 0;
+	while (y < H)
+	{
+		x = 0;
+		while (x < W)
+		{
+			mlx_put_pixel(img, x, y, color);
+			x++;
+		}
+		y++;
+	}
+}
+
+int	main(int argc, char *argv[])
 {
 	t_info		*info;
-	mlx_t		*mlx;
-	mlx_image_t	*img;
 
-	info = parse_map("test");
+	if (argc < 2)
+		ft_error("no map supplied\n", -2);
+	info = parse_map(argv[1]);
 	get_unit_length(info);
-	ft_printf("central x: %d, central y: %d\n", info->central[x], info->central[y]);
-	ft_printf("start x: %d, start y: %d\nunit size: %d\n", info->start[x], info->start[y], info->unit_length);
-	mlx = mlx_init(W, H, "bro", true);
-	if (!mlx)
+	reassign_coords(info, info->matrix, 1);
+	info->mlx = mlx_init(W, H, "bro", true);
+	if (!info->mlx)
 		ft_error("Error: malloc failure", errno);
-	img = mlx_new_image(mlx, W, H);
-	if (!img)
+	info->img = mlx_new_image(info->mlx, W, H);
+	if (!info->img)
 		ft_error("Error: malloc failure", errno);
-	int i, j, s;
-	i = 0;
-	while (i < info->height)
-	{
-		j = 0;
-		s = info->start[x];
-		while (j < info->width)
-		{
-			put_dot(img, info);
-			info->start[x] += info->unit_length;
-			j++;
-		}
-		//ft_printf("end x: %d\n", info->start[x]);
-		info->start[y] += info->unit_length;
-		info->start[x] = s;
-		i++;
-	}
-	mlx_image_to_window(mlx, img, PAD >> 1, PAD >> 1);
-	mlx_loop(mlx);
-	// exit(EXIT_SUCCESS);
+	//print_everything(info->matrix);
+	// exit(0);
+	draw_full_screen(info->img, 0x000000FF);
+	draw_all_lines(info, info->img, info->matrix, 1);
+	mlx_image_to_window(info->mlx, info->img, 0, 0);
+	mlx_key_hook(info->mlx, ft_listen_to_alicia_keys_baby, info);
+	mlx_loop(info->mlx);
+	exit(EXIT_SUCCESS);
 }

@@ -16,6 +16,9 @@
 		"unordered_map": "c",
 		"vector": "c",
 		"unistd.h": "c",
-		"__locale": "c"
+		"__locale": "c",
+		"__functional_03": "c",
+		"functional": "c",
+		"fdf.h": "c"
 	}
 }

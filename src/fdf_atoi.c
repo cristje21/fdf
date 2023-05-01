@@ -6,7 +6,7 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/03 21:47:47 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/03 21:49:56 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/04/27 16:55:16 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,9 @@ int	check_overflow(char *s)
 	int	i;
 
 	i = 0;
-	while (s[i] && s[i] != ' ' && i < 10)
+	while (s[i] && s[i] <= '9' && s[i] >= '0')
 		i++;
-	if (i == 10)
+	if (i > 10)
 		return (1);
 	return (0);
 }
@@ -68,26 +68,20 @@ int	fdf_atoi(const char *str)
 		res = res * 10 + s[i++] - '0';
 	res *= m;
 	if ((res <= 2147483647 && res >= -2147483648)
-		&& (!s[i] || s[i] == ' ' || s[i] == '\n'))
+		&& (!s[i] || s[i] == ' ' || s[i] == '\n' || s[i] == ','))
 		return (res);
 	return (ft_error("Error: !input is not an integer\n", -3), EXIT_FAILURE);
 }
 
-int	get_width(char *s)
+int	get_width(t_matrix *tmp)
 {
-	int	i;
 	int	count;
 
-	i = 0;
 	count = 0;
-	while (s[i] && s[i] != '\n')
+	while (tmp)
 	{
-		while (s[i] == ' ')
-			i++;
-		if (s[i] && s[i] != '\n')
-			count++;
-		while (s[i] && s[i] != ' ')
-			i++;
+		tmp = tmp->next;
+		count++;
 	}
 	return (count);
 }

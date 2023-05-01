@@ -2,7 +2,9 @@ NAME		=		fdf
 SRC			=		fdf_main.c \
 					put_line.c \
 					parse_map.c \
-					fdf_atoi.c
+					fdf_atoi.c \
+					misc_utils.c \
+					key_functions.c
 
 LIBFT		=		libft/libft.a
 OBJ_F		=		$(SRC:%.c=obj/%.o)
@@ -20,7 +22,7 @@ mlx :
 
 $(NAME) : $(OBJ_F)
 	make -C libft
-	$(CC) $(FLAGS) -o $@ $^ $(MLX_LIB) $(MLX_FLAGS) $(LIBFT)
+	$(CC) $(FSAN) $(FLAGS) -o $@ $^ $(MLX_LIB) $(MLX_FLAGS) $(LIBFT)
 	echo "executable ready"
 
 obj/%.o : src/%.c
