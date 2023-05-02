@@ -6,7 +6,7 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/03/22 16:46:48 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/05/01 21:43:19 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/05/02 13:52:40 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,11 @@ static void iso_transformation(int *result, t_matrix *matrix, t_info *info)
 	result[1] = ((matrix->x * info->unit_length) + (matrix->y * info->unit_length)) * sin(0.523599) + info->origin[1] - matrix->z;
 }
 
+// bool	is_inscreen(int *start, int *end, int unit_length)
+// {
+// 	if (start[0] < -unit_length || start[0] < -unit_length)
+// }
+
 void	draw_all_lines(t_info *info, mlx_image_t *img, t_matrix *matrix, int flag)
 {
 	int	start[2];
@@ -81,7 +86,8 @@ void	draw_all_lines(t_info *info, mlx_image_t *img, t_matrix *matrix, int flag)
 	{
 		iso_transformation(start, matrix, info);
 		iso_transformation(end, matrix->next, info);
-		put_line(start, end, matrix->color, img);
+		if (!is_inscreen(start, end, info->unit_length))
+			put_line(start, end, matrix->color, img);
 	}
 	if (matrix->down)
 	{
