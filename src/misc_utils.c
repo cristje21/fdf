@@ -6,11 +6,16 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/21 13:42:08 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/21 13:46:33 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/05/07 14:36:41 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fdf.h>
+
+int get_rgba(int r, int g, int b, int a)
+{
+	return (r << 24 | g << 16 | b << 8 | a);
+}
 
 static int	to_add(char x)
 {

@@ -6,7 +6,7 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/04/01 18:41:03 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/05/01 22:07:39 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/05/09 14:59:22 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void	get_line(char *s, int y, t_matrix **head)
 		if (s[i] == ',')
 			to_add = new_node(x, y, z, (ft_xtoi(&s[i + 1]) << 8) + 255);
 		else
-			to_add = new_node(x, y, z, 0xFFFFFFFF);
+			to_add = new_node(x, y, z, get_rgba(0, 0, 0, 255));
 		while (s[i] && s[i] != ' ')
 			i++;
 		add_back(head, to_add);
@@ -120,6 +120,8 @@ t_info	*parse_map(char *map)
 	if (s == NULL)
 		ft_error("Error: empty map\n", -1);
 	make_linked_list(fd, s, info);
-	info->z_scaler = 0;
+	info->z_scaler = 1;
+	info->std_line_color = get_rgba(0, 0, 0, 255);
+	info->bg_color = get_rgba(235, 255, 239, 255);
 	return (info);
 }

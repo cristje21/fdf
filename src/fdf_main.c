@@ -6,35 +6,13 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/03/22 16:46:48 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/05/02 13:52:40 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/05/09 14:45:03 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fdf.h>
 #include <stdio.h>
 #include <math.h>
-
-void	get_unit_length(t_info *info)
-{
-	if (W <= H)
-	{
-		if (info->width > info->height)
-			info->unit_length = ((W >> 1) - (PAD)) / info->width;
-		else
-			info->unit_length = ((W >> 1) - (PAD)) / info->height;
-	}
-	else
-	{
-		if (info->width > info->height)
-			info->unit_length = ((H >> 1) - (PAD)) / info->width;
-		else
-			info->unit_length = ((H >> 1) - (PAD)) / info->height;
-	}
-	if (info->unit_length < 3)
-		info->unit_length = 3;
-	info->origin[0] = W >> 1;
-	info->origin[1] = H >> 1;
-}
 
 void	print_everything(t_matrix *head)
 {
@@ -54,26 +32,11 @@ void	print_everything(t_matrix *head)
 	}
 }
 
-void reassign_coords(t_info *info, t_matrix *matrix, int flag)
-{
-	matrix->x -= (info->width >> 1);
-	matrix->y -= (info->height >> 1);
-	if (matrix->next && flag)
-		reassign_coords(info, matrix->next, 1);
-	if (matrix->down)
-		reassign_coords(info, matrix->down, 0);
-}
-
 static void iso_transformation(int *result, t_matrix *matrix, t_info *info)
 {
 	result[0] = ((matrix->x * info->unit_length) - (matrix->y * info->unit_length)) * cos(0.523599) + info->origin[0];
-	result[1] = ((matrix->x * info->unit_length) + (matrix->y * info->unit_length)) * sin(0.523599) + info->origin[1] - matrix->z;
+	result[1] = ((matrix->x * info->unit_length) + (matrix->y * info->unit_length)) * sin(0.523599) + info->origin[1] - (matrix->z * info->z_scaler);
 }
-
-// bool	is_inscreen(int *start, int *end, int unit_length)
-// {
-// 	if (start[0] < -unit_length || start[0] < -unit_length)
-// }
 
 void	draw_all_lines(t_info *info, mlx_image_t *img, t_matrix *matrix, int flag)
 {
@@ -86,8 +49,7 @@ void	draw_all_lines(t_info *info, mlx_image_t *img, t_matrix *matrix, int flag)
 	{
 		iso_transformation(start, matrix, info);
 		iso_transformation(end, matrix->next, info);
-		if (!is_inscreen(start, end, info->unit_length))
-			put_line(start, end, matrix->color, img);
+		put_line(start, end, matrix->color, img);
 	}
 	if (matrix->down)
 	{
@@ -110,12 +72,31 @@ void	draw_full_screen(mlx_image_t *img, int color)
 	{
 		x = 0;
 		while (x < W)
-		{
-			mlx_put_pixel(img, x, y, color);
-			x++;
-		}
+			mlx_put_pixel(img, x++, y, color);
 		y++;
 	}
+}
+
+void	change_bg(t_info *info, int key)
+{
+	if (key == MLX_KEY_KP_0) // teal green
+		info->bg_color = get_rgba(57, 179, 149, 255);
+	if (key == MLX_KEY_KP_1) // sky blue
+		info->bg_color = get_rgba(153, 228, 255, 255);
+	if (key == MLX_KEY_KP_2) // sunset
+		info->bg_color = get_rgba(255, 66, 0, 191);
+	draw_full_screen(info->img, info->bg_color);
+	draw_all_lines(info, info->img, info->matrix, 1);
+}
+
+void	single_events(mlx_key_data_t key, void *info)
+{
+	if (key.key == MLX_KEY_ESCAPE && key.action == MLX_PRESS)
+		mlx_close_window(((t_info *)info)->mlx);
+	if (key.key == MLX_KEY_C && key.action == MLX_PRESS)
+		recentre(info);
+	if (key.modifier == MLX_SHIFT && key.key >= MLX_KEY_KP_0 && key.key <= MLX_KEY_KP_9)
+		change_bg(info, key.key);
 }
 
 int	main(int argc, char *argv[])
@@ -133,12 +114,11 @@ int	main(int argc, char *argv[])
 	info->img = mlx_new_image(info->mlx, W, H);
 	if (!info->img)
 		ft_error("Error: malloc failure", errno);
-	//print_everything(info->matrix);
-	// exit(0);
-	draw_full_screen(info->img, 0x000000FF);
+	draw_full_screen(info->img, info->bg_color);
 	draw_all_lines(info, info->img, info->matrix, 1);
 	mlx_image_to_window(info->mlx, info->img, 0, 0);
-	mlx_key_hook(info->mlx, ft_listen_to_alicia_keys_baby, info);
+	mlx_key_hook(info->mlx, single_events, info);
+	mlx_loop_hook(info->mlx, ft_listen_to_alicia_keys_baby, info);
 	mlx_loop(info->mlx);
 	exit(EXIT_SUCCESS);
 }

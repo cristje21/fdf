@@ -6,7 +6,7 @@
 /*   By: cvan-sch <cvan-sch@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/03/30 14:25:57 by cvan-sch      #+#    #+#                 */
-/*   Updated: 2023/04/26 14:14:32 by cvan-sch      ########   odam.nl         */
+/*   Updated: 2023/05/09 13:41:48 by cvan-sch      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,7 +143,4 @@ void	put_line(int *start, int *end, int color, mlx_image_t *img)
 		one_point_two(temp, end, color, img);
 	else if ((abs(start[0] - end[0]) < abs(start[1] - end[1])) && start[1] > end[1])
 		two_point_two(temp, end, color, img);
-	else
-		ft_printf("wth!\n");
-	return ;
 }

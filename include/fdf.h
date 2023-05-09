@@ -27,6 +27,8 @@ typedef struct s_info
 	mlx_t		*mlx;
 	mlx_image_t	*img;
 	t_matrix	*matrix;		// input number matrix
+	int			bg_color;
+	int			std_line_color;
 	int			width;			// width of the matrix
 	int			height;			// height of the matrix
 	int			origin[2];		// central starting point
@@ -46,11 +48,20 @@ int			fdf_atoi(const char *str);
 int			ft_xtoi(char *hex);
 void		add_back(t_matrix **head, t_matrix *to_add);
 t_matrix	*new_node(int x, int y, int z, int color);
+void		draw_full_screen(mlx_image_t *img, int color);
+void		draw_all_lines(t_info *info, mlx_image_t *img, t_matrix *matrix, int flag);
+
+/*	initialize	*/
+
+void		get_unit_length(t_info *info);
+void		reassign_coords(t_info *info, t_matrix *matrix, int flag);
 
 /*	key functions	*/
 
-void	move_image(t_info *info, mlx_key_data_t key);
-void	zoom_image(t_info *info, mlx_key_data_t key);
-void	ft_listen_to_alicia_keys_baby(mlx_key_data_t key, void *info);
+void		move_image(t_info *info, int key);
+void		zoom_image(t_info *info, int key);
+void		ft_listen_to_alicia_keys_baby(void *info);
+int			get_rgba(int r, int g, int b, int a);
+void		recentre(t_info *info);
 
 #endif

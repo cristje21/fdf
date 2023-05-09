@@ -4,7 +4,8 @@ SRC			=		fdf_main.c \
 					parse_map.c \
 					fdf_atoi.c \
 					misc_utils.c \
-					key_functions.c
+					key_functions.c \
+					initialize_var.c
 
 LIBFT		=		libft/libft.a
 OBJ_F		=		$(SRC:%.c=obj/%.o)

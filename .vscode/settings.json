@@ -19,6 +19,7 @@
 		"__locale": "c",
 		"__functional_03": "c",
 		"functional": "c",
-		"fdf.h": "c"
+		"fdf.h": "c",
+		"__node_handle": "c"
 	}
 }
